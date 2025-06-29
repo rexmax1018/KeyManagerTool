@@ -9,16 +9,20 @@ namespace KeyManagerTool
     {
         private readonly ICryptoKeyService _keyService;
         private readonly ICryptoService _cryptoService;
+        private readonly string _basePath; // 新增此成員變數來儲存傳入的 basePath
 
-        public KeyGenerator(ICryptoKeyService keyService, ICryptoService cryptoService)
+        // 修改建構函式，接受 basePath 參數
+        public KeyGenerator(ICryptoKeyService keyService, ICryptoService cryptoService, string basePath)
         {
             _keyService = keyService;
             _cryptoService = cryptoService;
+            _basePath = basePath; // 初始化 _basePath
         }
 
         public void Generate()
         {
-            string updatePath = Path.Combine(Directory.GetCurrentDirectory(), "Keys", "update");
+            // 使用 _basePath 來構建 updatePath
+            string updatePath = Path.Combine(_basePath, "update");
             Directory.CreateDirectory(updatePath);
 
             string unifiedName = GetRandomName();
