@@ -12,6 +12,9 @@ public class KeyManagerService
 
     private int serialCounter = 1;
 
+    private FileSystemWatcher _watcher;
+    private readonly object _folderProcessingLock = new object();
+
     public KeyManagerService()
     {
         updatePath = Path.Combine(basePath, "update");
@@ -40,14 +43,56 @@ public class KeyManagerService
                 }
             }
         }
+
+        _watcher = new FileSystemWatcher(updatePath)
+        {
+            NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite
+        };
+
+        _watcher.Created += OnFileCreatedOrChanged;
+        _watcher.Changed += OnFileCreatedOrChanged;
+        _watcher.Renamed += OnFileRenamed;
+        _watcher.Deleted += OnFileDeleted;
     }
 
-    public async Task StartAsync()
+    public Task StartAsync()
     {
-        while (true)
+        Console.WriteLine($"[Watcher] 開始監控資料夾: {updatePath}");
+        WriteLog($"開始監控資料夾: {updatePath}");
+
+        ProcessUpdateFolder();
+
+        _watcher.EnableRaisingEvents = true;
+
+        return Task.CompletedTask;
+    }
+
+    private void OnFileCreatedOrChanged(object sender, FileSystemEventArgs e)
+    {
+        Console.WriteLine($"[Watcher Event] 偵測到檔案變動: {e.FullPath}, 類型: {e.ChangeType}");
+        WriteLog($"偵測到檔案變動: {e.FullPath}, 類型: {e.ChangeType}");
+        ProcessUpdateFolderWrapper();
+    }
+
+    private void OnFileRenamed(object sender, RenamedEventArgs e)
+    {
+        Console.WriteLine($"[Watcher Event] 偵測到檔案更名: {e.OldFullPath} -> {e.FullPath}, 類型: {e.ChangeType}");
+        WriteLog($"偵測到檔案更名: {e.OldFullPath} -> {e.FullPath}, 類型: {e.ChangeType}");
+        ProcessUpdateFolderWrapper();
+    }
+
+    private void OnFileDeleted(object sender, FileSystemEventArgs e)
+    {
+        Console.WriteLine($"[Watcher Event] 偵測到檔案刪除: {e.FullPath}, 類型: {e.ChangeType}");
+        WriteLog($"偵測到檔案刪除: {e.FullPath}, 類型: {e.ChangeType}");
+        ProcessUpdateFolderWrapper();
+    }
+
+    private void ProcessUpdateFolderWrapper()
+    {
+        lock (_folderProcessingLock)
         {
             ProcessUpdateFolder();
-            await Task.Delay(3000);
         }
     }
 

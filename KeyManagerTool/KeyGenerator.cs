@@ -5,12 +5,12 @@ using System.Text;
 
 namespace KeyManagerTool
 {
-    public class TestKeyGenerator
+    public class KeyGenerator
     {
         private readonly ICryptoKeyService _keyService;
         private readonly ICryptoService _cryptoService;
 
-        public TestKeyGenerator(ICryptoKeyService keyService, ICryptoService cryptoService)
+        public KeyGenerator(ICryptoKeyService keyService, ICryptoService cryptoService)
         {
             _keyService = keyService;
             _cryptoService = cryptoService;
