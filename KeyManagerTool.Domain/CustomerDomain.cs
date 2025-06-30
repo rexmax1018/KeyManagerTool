@@ -19,7 +19,7 @@ namespace KeyManagerTool.Domain
             {
                 if (_dataEncryptionService == null)
                 {
-                    throw new InvalidOperationException("IDataEncryptionService 未被注入到 CustomerDomain 領域實體中，無法解密 Email。");
+                    throw new InvalidOperationException("IDataEncryptionService 未被注入到 CustomerDomain  Domain 實體中，無法解密 Email。");
                 }
 
                 if (!string.IsNullOrEmpty(_encryptedEmailData))

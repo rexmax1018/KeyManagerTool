@@ -24,7 +24,7 @@ namespace KeyManagerTool.Service.Services
 
         public async Task<List<CustomerDomain>> GetAllCustomersAsync()
         {
-            _logger.Info("獲取所有客戶領域實體。");
+            _logger.Info("獲取所有客戶 Domain 實體。");
             var daoCustomers = await _customerRepository.GetAllCustomersAsync();
             var domainCustomers = new List<CustomerDomain>();
 
@@ -44,7 +44,7 @@ namespace KeyManagerTool.Service.Services
 
         public async Task<CustomerDomain> GetCustomerByIdAsync(int id)
         {
-            _logger.Info($"獲取 ID 為 {id} 的客戶領域實體。");
+            _logger.Info($"獲取 ID 為 {id} 的客戶 Domain 實體。");
             var daoCustomer = await _customerRepository.GetCustomerByIdAsync(id);
             if (daoCustomer == null)
             {
@@ -63,7 +63,7 @@ namespace KeyManagerTool.Service.Services
 
         public async Task AddCustomerAsync(CustomerDomain customer)
         {
-            _logger.Info($"新增客戶領域實體: {customer.Name}");
+            _logger.Info($"新增客戶 Domain 實體: {customer.Name}");
 
             try
             {
@@ -102,7 +102,7 @@ namespace KeyManagerTool.Service.Services
 
         public async Task UpdateCustomerAsync(CustomerDomain customer)
         {
-            _logger.Info($"更新客戶領域實體: {customer.Name} (ID: {customer.Id})");
+            _logger.Info($"更新客戶 Domain 實體: {customer.Name} (ID: {customer.Id})");
 
             try
             {
@@ -139,7 +139,7 @@ namespace KeyManagerTool.Service.Services
 
         public async Task DeleteCustomerAsync(int id)
         {
-            _logger.Info($"刪除 ID 為 {id} 的客戶領域實體。");
+            _logger.Info($"刪除 ID 為 {id} 的客戶 Domain 實體。");
             try
             {
                 await _customerRepository.DeleteCustomerAsync(id);

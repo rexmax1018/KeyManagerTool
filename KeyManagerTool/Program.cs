@@ -1,5 +1,4 @@
-﻿// KeyManagerTool/Program.cs (最新版本，包含測試實作調整)
-using Autofac;
+﻿using Autofac;
 using NLog;
 using Microsoft.Extensions.Configuration;
 using KeyManagerTool.Service.Modules;
@@ -101,7 +100,7 @@ try
                     // 2. 使用最新的金鑰重新加密
                     string newEncryptedData = dataEncryptionService.Encrypt(decryptedEmail, currentActiveUnifiedName);
 
-                    // 3. 更新領域實體的加密數據
+                    // 3. 更新 Domain 實體的加密數據
                     customer.UpdateEncryptedEmailDataForMigration(newEncryptedData);
 
                     // 4. 更新資料庫
