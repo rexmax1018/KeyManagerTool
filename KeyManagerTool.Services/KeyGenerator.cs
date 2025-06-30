@@ -5,7 +5,7 @@ using NLog;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace KeyManagerTool
+namespace KeyManagerTool.Services
 {
     public class KeyGenerator
     {

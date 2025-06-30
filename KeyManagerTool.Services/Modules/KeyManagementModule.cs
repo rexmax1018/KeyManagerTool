@@ -1,6 +1,6 @@
 ﻿using Autofac;
 
-namespace KeyManagerTool.Modules
+namespace KeyManagerTool.Services.Modules
 {
     public class KeyManagementModule : Module
     {

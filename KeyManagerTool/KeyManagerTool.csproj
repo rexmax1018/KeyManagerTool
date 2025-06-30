@@ -10,46 +10,20 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.3.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
     <PackageReference Include="NLog" Version="6.0.1" />
     <PackageReference Include="NLog.Extensions.Logging" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="CryptoSuite.Config">
-      <HintPath>CryptoSuite\CryptoSuite.Config.dll</HintPath>
-    </Reference>
-    <Reference Include="CryptoSuite.Extensions">
-      <HintPath>CryptoSuite\CryptoSuite.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="CryptoSuite.Helpers">
-      <HintPath>CryptoSuite\CryptoSuite.Helpers.dll</HintPath>
-    </Reference>
-    <Reference Include="CryptoSuite.KeyManagement">
-      <HintPath>CryptoSuite\CryptoSuite.KeyManagement.dll</HintPath>
-    </Reference>
-    <Reference Include="CryptoSuite.Services">
-      <HintPath>CryptoSuite\CryptoSuite.Services.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\KeyManagerTool.Dao\KeyManagerTool.Dao.csproj" />
+    <ProjectReference Include="..\KeyManagerTool.Domain\KeyManagerTool.Domain.csproj" />
+    <ProjectReference Include="..\KeyManagerTool.Service\KeyManagerTool.Service.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="CryptoSuite\CryptoSuite.Config.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="CryptoSuite\CryptoSuite.Extensions.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="CryptoSuite\CryptoSuite.Helpers.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="CryptoSuite\CryptoSuite.KeyManagement.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="CryptoSuite\CryptoSuite.Services.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="NLog.config">

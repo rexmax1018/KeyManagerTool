@@ -5,7 +5,7 @@ using CryptoSuite.KeyManagement.Interfaces;
 using CryptoSuite.Services;
 using CryptoSuite.Services.Interfaces;
 
-namespace KeyManagerTool.Modules
+namespace KeyManagerTool.Services.Modules
 {
     public class CryptoSuiteModule : Module
     {
