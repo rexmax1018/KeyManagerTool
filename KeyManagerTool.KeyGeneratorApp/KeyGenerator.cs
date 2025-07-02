@@ -56,6 +56,7 @@ namespace KeyManagerTool.KeyGeneratorApp
                 File.WriteAllText(Path.Combine(keyOutputPath, $"{unifiedName}.private.pem"), rsaKey.PrivateKey);
 
                 _logger.Info($"RSA 金鑰已生成並儲存到 {keyOutputPath}: {unifiedName}.public.pem / .private.pem");
+
                 Console.WriteLine($"[測試] RSA 金鑰已產生: {unifiedName}.public.pem / .private.pem");
             }
             catch (CryptographicException ex)
@@ -106,6 +107,7 @@ namespace KeyManagerTool.KeyGeneratorApp
                 File.WriteAllBytes(aesDerPath, encrypted);
 
                 _logger.Info($"AES Key + IV 已加密儲存到 {keyOutputPath}: {unifiedName}.der");
+
                 Console.WriteLine($"[測試] AES Key + IV 已加密儲存: {unifiedName}.der");
             }
             catch (CryptographicException ex)

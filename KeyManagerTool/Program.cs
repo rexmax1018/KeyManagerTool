@@ -12,6 +12,7 @@ Console.WriteLine("[KeyManagerTool] 正在啟動...");
 
 // --- NLog 配置開始 ---
 LogManager.Setup().LoadConfigurationFromFile("NLog.config");
+
 var mainLogger = LogManager.GetCurrentClassLogger();
 // --- NLog 配置結束 ---
 

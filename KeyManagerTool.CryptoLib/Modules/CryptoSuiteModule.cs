@@ -12,7 +12,6 @@ namespace KeyManagerTool.CryptoLib.Modules // 更新命名空間
         protected override void Load(ContainerBuilder builder)
         {
             // 初始化靜態 CryptoConfig 設定
-            // CryptoConfig.Load 會從應用程式的 appsettings.json 載入，所以這裡不需要指定路徑。
             CryptoConfig.Load();
 
             // 註冊工廠

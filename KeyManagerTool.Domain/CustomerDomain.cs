@@ -26,6 +26,7 @@ namespace KeyManagerTool.Domain
                 {
                     return _dataEncryptionService.Decrypt(_encryptedEmailData);
                 }
+
                 return _emailPlainText;
             }
             set
@@ -50,12 +51,13 @@ namespace KeyManagerTool.Domain
             {
                 throw new ArgumentNullException(nameof(dataEncryptionService), "創建新客戶時，必須提供 IDataEncryptionService。");
             }
+
             if (string.IsNullOrEmpty(currentUnifiedNameForNewEncryption))
             {
                 throw new ArgumentException("創建新客戶時，必須提供 currentUnifiedNameForNewEncryption。", nameof(currentUnifiedNameForNewEncryption));
             }
 
-            string encryptedEmail = dataEncryptionService.Encrypt(email, currentUnifiedNameForNewEncryption);
+            var encryptedEmail = dataEncryptionService.Encrypt(email, currentUnifiedNameForNewEncryption);
 
             return new CustomerDomain(id, name, encryptedEmail, dataEncryptionService);
         }
@@ -82,6 +84,7 @@ namespace KeyManagerTool.Domain
             {
                 throw new ArgumentException("新的加密數據不能為空。", nameof(newEncryptedDataWithUnifiedName));
             }
+
             _encryptedEmailData = newEncryptedDataWithUnifiedName;
             _emailPlainText = null;
         }

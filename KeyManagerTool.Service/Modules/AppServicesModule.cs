@@ -23,7 +23,6 @@ namespace KeyManagerTool.Service.Modules
             }).InstancePerLifetimeScope(); // 確保每個生命週期範圍內有一個 DbContext 實例
 
             // 註冊 DAO 層的儲存庫
-            // dbContext 應為 InstancePerLifetimeScope
             builder.RegisterType<CustomerRepository>().As<ICustomerRepository>().InstancePerLifetimeScope();
 
             // 註冊應用程式服務

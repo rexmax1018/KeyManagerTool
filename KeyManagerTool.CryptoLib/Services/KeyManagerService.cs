@@ -15,7 +15,7 @@ namespace KeyManagerTool.CryptoLib.Services
         private readonly string updatePath;
         private readonly string currentPath;
         private readonly string historyPath;
-        private readonly object _folderProcessingLock = new object();
+        private readonly object _folderProcessingLock = new();
         private readonly ILogger _logger;
 
         public KeyManagerService(ILogger logger, string basePath)
@@ -39,6 +39,7 @@ namespace KeyManagerTool.CryptoLib.Services
             catch (Exception ex)
             {
                 _logger.Fatal(ex, $"無法建立金鑰管理目錄結構。應用程式無法正常啟動：{_basePath}");
+
                 throw;
             }
 
@@ -52,6 +53,7 @@ namespace KeyManagerTool.CryptoLib.Services
             ProcessUpdateFolderWrapper();
 
             _logger.Info($"一次性金鑰處理完成。");
+
             return Task.CompletedTask;
         }
 
@@ -83,21 +85,25 @@ namespace KeyManagerTool.CryptoLib.Services
             catch (DirectoryNotFoundException ex)
             {
                 _logger.Error(ex, $"Update 資料夾不存在: {updatePath}。無法掃描。");
+
                 return;
             }
             catch (IOException ex)
             {
                 _logger.Error(ex, $"讀取 Update 資料夾時發生 IO 錯誤: {updatePath}。");
+
                 return;
             }
             catch (UnauthorizedAccessException ex)
             {
                 _logger.Error(ex, $"沒有權限存取 Update 資料夾: {updatePath}。");
+
                 return;
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, $"掃描 Update 資料夾時發生未預期錯誤: {updatePath}。");
+
                 return;
             }
 
@@ -176,7 +182,7 @@ namespace KeyManagerTool.CryptoLib.Services
             {
                 _logger.Info($"開始處理金鑰組: {keySet.UnifiedName} (建立時間: {keySet.CreationTime:o})");
 
-                bool success = ProcessAndMoveKeySet(keySet);
+                var success = ProcessAndMoveKeySet(keySet);
 
                 if (success)
                 {
@@ -212,10 +218,13 @@ namespace KeyManagerTool.CryptoLib.Services
             try
             {
                 var currentAes = Directory.GetFiles(currentPath, "*.der").FirstOrDefault();
+
                 if (currentAes != null)
                 {
                     var destHistPath = Path.Combine(historyPath, Path.GetFileName(currentAes));
+
                     File.Move(currentAes, destHistPath, true);
+
                     _logger.Info($"已將舊的 AES 金鑰從 Current 移至 History: {Path.GetFileName(currentAes)}");
                 }
                 else
@@ -225,10 +234,12 @@ namespace KeyManagerTool.CryptoLib.Services
 
                 var currentPub = Directory.GetFiles(currentPath, "*.public.pem").FirstOrDefault();
                 var currentPriv = Directory.GetFiles(currentPath, "*.private.pem").FirstOrDefault();
+
                 if (currentPub != null && currentPriv != null)
                 {
                     File.Move(currentPub, Path.Combine(historyPath, Path.GetFileName(currentPub)), true);
                     File.Move(currentPriv, Path.Combine(historyPath, Path.GetFileName(currentPriv)), true);
+
                     _logger.Info($"已將舊的 RSA 金鑰對從 Current 移至 History: {Path.GetFileName(currentPub)}, {Path.GetFileName(currentPriv)}");
                 }
                 else
@@ -239,12 +250,13 @@ namespace KeyManagerTool.CryptoLib.Services
             catch (Exception ex)
             {
                 _logger.Error(ex, $"移動舊金鑰到 History 資料夾時發生錯誤，將不進行新金鑰搬移。金鑰組: {keySet.UnifiedName}");
+
                 return false;
             }
 
-            string destAesPath = Path.Combine(currentPath, keySet.UnifiedName + ".der");
-            string destPubPath = Path.Combine(currentPath, keySet.UnifiedName + ".public.pem");
-            string destPrivPath = Path.Combine(currentPath, keySet.UnifiedName + ".private.pem");
+            var destAesPath = Path.Combine(currentPath, keySet.UnifiedName + ".der");
+            var destPubPath = Path.Combine(currentPath, keySet.UnifiedName + ".public.pem");
+            var destPrivPath = Path.Combine(currentPath, keySet.UnifiedName + ".private.pem");
 
             try
             {
@@ -260,6 +272,7 @@ namespace KeyManagerTool.CryptoLib.Services
                         try
                         {
                             File.Delete(file);
+
                             _logger.Warn($"清除 Current 資料夾中殘留的舊金鑰檔案: {Path.GetFileName(file)}");
                         }
                         catch (Exception ex)
@@ -270,35 +283,43 @@ namespace KeyManagerTool.CryptoLib.Services
                 }
 
                 File.Move(keySet.AesPath, destAesPath, true);
+
                 _logger.Info($"新 AES 金鑰已搬移到 Current: {Path.GetFileName(destAesPath)}");
 
                 File.Move(keySet.RsaPublicKeyPath, destPubPath, true);
+
                 _logger.Info($"新 RSA 公鑰已搬移到 Current: {Path.GetFileName(destPubPath)}");
 
                 File.Move(keySet.RsaPrivateKeyPath, destPrivPath, true);
+
                 _logger.Info($"新 RSA 私鑰已搬移到 Current: {Path.GetFileName(destPrivPath)}");
 
                 _logger.Info($"金鑰組 {keySet.UnifiedName} 已成功搬移到 Current 資料夾。");
+
                 return true;
             }
             catch (FileNotFoundException ex)
             {
                 _logger.Error(ex, $"移動金鑰組 {keySet.UnifiedName} 時，來源檔案未找到。無法完成處理。");
+
                 return false;
             }
             catch (IOException ex)
             {
                 _logger.Error(ex, $"移動金鑰組 {keySet.UnifiedName} 到 Current 失敗 (IO 錯誤)。");
+
                 return false;
             }
             catch (UnauthorizedAccessException ex)
             {
                 _logger.Error(ex, $"移動金鑰組 {keySet.UnifiedName} 到 Current 失敗 (權限不足)。");
+
                 return false;
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, $"移動金鑰組 {keySet.UnifiedName} 到 Current 時發生未預期錯誤。");
+
                 return false;
             }
         }
@@ -310,13 +331,16 @@ namespace KeyManagerTool.CryptoLib.Services
                 if (!Directory.Exists(searchPath))
                 {
                     _logger.Warn($"搜索路徑 '{searchPath}' 不存在，無法查找金鑰組 '{unifiedName}'。");
+
                     return null;
                 }
 
                 var files = Directory.GetFiles(searchPath, $"{unifiedName}.*").ToList();
+
                 if (files.Count == 0)
                 {
                     _logger.Debug($"在 '{searchPath}' 中未找到與 unifiedName '{unifiedName}' 匹配的檔案。");
+
                     return null;
                 }
 
@@ -326,7 +350,8 @@ namespace KeyManagerTool.CryptoLib.Services
 
                 if (aesFile != null && rsaPubFile != null && rsaPrivFile != null)
                 {
-                    DateTime creationTime = DateTime.UtcNow;
+                    var creationTime = DateTime.UtcNow;
+
                     try
                     {
                         creationTime = File.GetCreationTimeUtc(aesFile);
@@ -337,6 +362,7 @@ namespace KeyManagerTool.CryptoLib.Services
                     }
 
                     _logger.Info($"在 '{searchPath}' 中找到 unifiedName '{unifiedName}' 的完整金鑰組。");
+
                     return new KeySetInfo
                     {
                         UnifiedName = unifiedName,
@@ -349,12 +375,14 @@ namespace KeyManagerTool.CryptoLib.Services
                 else
                 {
                     _logger.Warn($"在 '{searchPath}' 中找到 unifiedName '{unifiedName}' 的部分檔案，但金鑰組不完整。");
+
                     return null;
                 }
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, $"獲取 unifiedName '{unifiedName}' 在 '{searchPath}' 中的金鑰組信息時發生未預期錯誤。");
+
                 return null;
             }
         }
@@ -362,12 +390,14 @@ namespace KeyManagerTool.CryptoLib.Services
         public KeySetInfo GetCurrentKeySetInfo(string unifiedName)
         {
             _logger.Debug($"嘗試從 '{currentPath}' 獲取 unifiedName '{unifiedName}' 的金鑰組。");
+
             return GetKeySetInfoByUnifiedName(unifiedName, currentPath);
         }
 
         public KeySetInfo GetHistoryKeySetInfo(string unifiedName)
         {
             _logger.Debug($"嘗試從 '{historyPath}' 獲取 unifiedName '{unifiedName}' 的金鑰組。");
+
             return GetKeySetInfoByUnifiedName(unifiedName, historyPath);
         }
 
@@ -378,6 +408,7 @@ namespace KeyManagerTool.CryptoLib.Services
         public string GetLatestActiveUnifiedName()
         {
             _logger.Debug($"嘗試獲取 '{currentPath}' 中最新的活動金鑰組的 unifiedName。");
+
             try
             {
                 var filesInCurrent = Directory.GetFiles(currentPath).ToList();
@@ -425,17 +456,20 @@ namespace KeyManagerTool.CryptoLib.Services
                 if (latestKeySet != null)
                 {
                     _logger.Info($"在 '{currentPath}' 中找到最新的活動金鑰組: {latestKeySet.UnifiedName}");
+
                     return latestKeySet.UnifiedName;
                 }
                 else
                 {
                     _logger.Warn($"在 '{currentPath}' 中未找到任何完整的金鑰組。");
+
                     return null;
                 }
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, $"獲取 '{currentPath}' 中最新活動 unifiedName 時發生錯誤。");
+
                 return null;
             }
         }

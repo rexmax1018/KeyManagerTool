@@ -25,6 +25,7 @@ namespace KeyManagerTool.Service.Services
         public async Task<List<CustomerDomain>> GetAllCustomersAsync()
         {
             _logger.Info("獲取所有客戶 Domain 實體。");
+
             var daoCustomers = await _customerRepository.GetAllCustomersAsync();
             var domainCustomers = new List<CustomerDomain>();
 
@@ -36,16 +37,20 @@ namespace KeyManagerTool.Service.Services
                     daoCustomer.Email,
                     _dataEncryptionService
                 );
+
                 domainCustomer.SetEncryptedEmailDataFromPersistence(daoCustomer.Email);
                 domainCustomers.Add(domainCustomer);
             }
+
             return domainCustomers;
         }
 
         public async Task<CustomerDomain> GetCustomerByIdAsync(int id)
         {
             _logger.Info($"獲取 ID 為 {id} 的客戶 Domain 實體。");
+
             var daoCustomer = await _customerRepository.GetCustomerByIdAsync(id);
+
             if (daoCustomer == null)
             {
                 return null;
@@ -57,7 +62,9 @@ namespace KeyManagerTool.Service.Services
                 daoCustomer.Email,
                 _dataEncryptionService
             );
+
             domainCustomer.SetEncryptedEmailDataFromPersistence(daoCustomer.Email);
+
             return domainCustomer;
         }
 
@@ -67,12 +74,13 @@ namespace KeyManagerTool.Service.Services
 
             try
             {
-                string currentUnifiedName = "DefaultUnifiedName";
+                var currentUnifiedName = "DefaultUnifiedName";
 
                 // 如果 Email 屬性已設定明文，則進行加密
                 if (!string.IsNullOrEmpty(customer.Email) && string.IsNullOrEmpty(customer.GetEncryptedEmailDataForPersistence()))
                 {
                     var encryptedEmail = _dataEncryptionService.Encrypt(customer.Email, currentUnifiedName);
+
                     customer.UpdateEncryptedEmailDataForMigration(encryptedEmail);
                 }
 
@@ -96,6 +104,7 @@ namespace KeyManagerTool.Service.Services
             catch (Exception ex)
             {
                 _logger.Error(ex, $"新增客戶失敗: {customer.Name}");
+
                 throw;
             }
         }
@@ -107,25 +116,26 @@ namespace KeyManagerTool.Service.Services
             try
             {
                 var daoCustomer = await _customerRepository.GetCustomerByIdAsync(customer.Id);
+
                 if (daoCustomer == null)
                 {
                     _logger.Warn($"嘗試更新不存在的客戶 (ID: {customer.Id})。");
+
                     return;
                 }
 
                 daoCustomer.Name = customer.Name;
 
-                string currentUnifiedName = "DefaultUnifiedName";
+                var currentUnifiedName = "DefaultUnifiedName";
 
                 if (string.IsNullOrEmpty(customer.GetEncryptedEmailDataForPersistence()) && !string.IsNullOrEmpty(customer.Email))
                 {
-                    // Email 屬性被設定為明文，需要用最新金鑰重新加密
                     var encryptedEmail = _dataEncryptionService.Encrypt(customer.Email, currentUnifiedName);
+
                     customer.UpdateEncryptedEmailDataForMigration(encryptedEmail);
                 }
 
                 daoCustomer.Email = customer.GetEncryptedEmailDataForPersistence();
-                // CreatedDate 通常不會在這裡更新，視業務邏輯而定
 
                 await _customerRepository.UpdateCustomerAsync(daoCustomer);
                 await _customerRepository.SaveChangesAsync();
@@ -133,6 +143,7 @@ namespace KeyManagerTool.Service.Services
             catch (Exception ex)
             {
                 _logger.Error(ex, $"更新客戶失敗: {customer.Name} (ID: {customer.Id})");
+
                 throw;
             }
         }
@@ -140,6 +151,7 @@ namespace KeyManagerTool.Service.Services
         public async Task DeleteCustomerAsync(int id)
         {
             _logger.Info($"刪除 ID 為 {id} 的客戶 Domain 實體。");
+
             try
             {
                 await _customerRepository.DeleteCustomerAsync(id);
@@ -148,6 +160,7 @@ namespace KeyManagerTool.Service.Services
             catch (Exception ex)
             {
                 _logger.Error(ex, $"刪除客戶失敗 (ID: {id})");
+
                 throw;
             }
         }
