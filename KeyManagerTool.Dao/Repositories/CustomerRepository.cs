@@ -1,7 +1,7 @@
 ﻿using KeyManagerTool.Dao.Interfaces;
 using KeyManagerTool.Dao.Models;
 using NLog;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace KeyManagerTool.Dao.Repositories
 {
@@ -35,12 +35,15 @@ namespace KeyManagerTool.Dao.Repositories
             _logger.Debug($"新增客戶: {customer.Name}");
 
             _dbContext.Customers.Add(customer);
+
+            await Task.CompletedTask;
         }
 
         public async Task UpdateCustomerAsync(Customer customer)
         {
             _logger.Debug($"更新客戶: {customer.Name} (ID: {customer.Id})");
-            _dbContext.Entry(customer).State = EntityState.Modified;
+
+            _dbContext.Customers.Update(customer);
 
             await Task.CompletedTask;
         }
@@ -55,7 +58,6 @@ namespace KeyManagerTool.Dao.Repositories
             {
                 _dbContext.Customers.Remove(customer);
             }
-
             await Task.CompletedTask;
         }
 

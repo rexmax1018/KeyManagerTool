@@ -1,28 +1,23 @@
-﻿// KeyManagerTool.Dao/AppDbContext.cs (最終修正後)
-using System.Data.Entity;
+﻿using Microsoft.EntityFrameworkCore;
 using KeyManagerTool.Dao.Models;
-using System.Configuration;
-using KeyManagerTool.Dao.Migrations;
 
 namespace KeyManagerTool.Dao
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(string connectionString) : base(connectionString)
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
-            Database.SetInitializer<AppDbContext>(null);
-        }
-
-        public AppDbContext() : base("name=DefaultConnection")
-        {
-            Database.SetInitializer<AppDbContext>(null);
+            // 在 EF Core 中，Database.SetInitializer<TContext>(null) 不再適用。
+            // 初始化的邏輯通常透過 DbContextOptions 來配置，或者在應用程式啟動時使用 Migrate()。
         }
 
         public DbSet<Customer> Customers { get; set; }
 
-        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Customer>().ToTable("Customers");
         }
     }
 }
