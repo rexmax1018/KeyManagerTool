@@ -1,4 +1,4 @@
-﻿using KeyManagerTool.Domain.Interfaces;
+﻿using KeyManagerTool.CryptoLib.Interfaces;
 
 namespace KeyManagerTool.Domain
 {

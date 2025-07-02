@@ -1,7 +1,13 @@
-﻿using KeyManagerTool.Service.Models;
+﻿using KeyManagerTool.CryptoLib.Models;
 using System.Text.RegularExpressions;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System;
+using System.Threading.Tasks;
+using NLog;
 
-namespace KeyManagerTool.Service
+namespace KeyManagerTool.CryptoLib.Services
 {
     public class KeyManagerService
     {
@@ -9,12 +15,10 @@ namespace KeyManagerTool.Service
         private readonly string updatePath;
         private readonly string currentPath;
         private readonly string historyPath;
-
         private readonly object _folderProcessingLock = new object();
+        private readonly ILogger _logger;
 
-        private readonly NLog.ILogger _logger;
-
-        public KeyManagerService(NLog.ILogger logger, string basePath)
+        public KeyManagerService(ILogger logger, string basePath)
         {
             _logger = logger;
             _basePath = basePath;
@@ -176,7 +180,22 @@ namespace KeyManagerTool.Service
 
                 if (success)
                 {
-                    _logger.Info($"金鑰組 {keySet.UnifiedName} 已成功搬移到 Current 資料夾，等待資料遷移服務處理完成後，再清除 Update 資料夾。");
+                    // 成功搬移後，從 update 資料夾中刪除原始檔案
+                    foreach (var filePath in keySet.GetAllPaths())
+                    {
+                        try
+                        {
+                            if (File.Exists(filePath))
+                            {
+                                File.Delete(filePath);
+                                _logger.Info($"已從 Update 資料夾刪除檔案: {Path.GetFileName(filePath)}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(ex, $"刪除檔案失敗: {Path.GetFileName(filePath)}");
+                        }
+                    }
                 }
                 else
                 {
@@ -189,6 +208,7 @@ namespace KeyManagerTool.Service
         {
             _logger.Info($"嘗試移動金鑰組 {keySet.UnifiedName} 到 Current 資料夾...");
 
+            // 1. 先處理舊金鑰：將 current 資料夾中的舊金鑰移至 history
             try
             {
                 var currentAes = Directory.GetFiles(currentPath, "*.der").FirstOrDefault();
@@ -228,6 +248,7 @@ namespace KeyManagerTool.Service
 
             try
             {
+                // 清理 current 資料夾中所有與當前 KeySetInfo 無關的舊金鑰
                 foreach (var file in Directory.GetFiles(currentPath))
                 {
                     if (!file.EndsWith(".der") && !file.EndsWith(".public.pem") && !file.EndsWith(".private.pem")) continue;
@@ -359,10 +380,8 @@ namespace KeyManagerTool.Service
             _logger.Debug($"嘗試獲取 '{currentPath}' 中最新的活動金鑰組的 unifiedName。");
             try
             {
-                // 獲取 current 資料夾中所有金鑰文件
                 var filesInCurrent = Directory.GetFiles(currentPath).ToList();
 
-                // 根據統一名稱分組文件，並篩選出完整的金鑰組
                 var fileGroups = filesInCurrent
                     .GroupBy(f => Path.GetFileNameWithoutExtension(f).Split('.')[0])
                     .Select(g => new
@@ -401,7 +420,6 @@ namespace KeyManagerTool.Service
                     }
                 }
 
-                // 找到最新創建的金鑰組
                 var latestKeySet = completeKeySets.OrderByDescending(ks => ks.CreationTime).FirstOrDefault();
 
                 if (latestKeySet != null)

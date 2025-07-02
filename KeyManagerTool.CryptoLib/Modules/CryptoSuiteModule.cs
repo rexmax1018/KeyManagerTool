@@ -5,14 +5,15 @@ using CryptoSuite.KeyManagement.Interfaces;
 using CryptoSuite.Services;
 using CryptoSuite.Services.Interfaces;
 
-namespace KeyManagerTool.Services.Modules
+namespace KeyManagerTool.CryptoLib.Modules // 更新命名空間
 {
     public class CryptoSuiteModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
             // 初始化靜態 CryptoConfig 設定
-            CryptoConfig.Load("appsettings.json");
+            // CryptoConfig.Load 會從應用程式的 appsettings.json 載入，所以這裡不需要指定路徑。
+            CryptoConfig.Load();
 
             // 註冊工廠
             builder.RegisterType<KeyGeneratorFactory>().As<IKeyGeneratorFactory>().SingleInstance();

@@ -1,6 +1,6 @@
-﻿using KeyManagerTool.Dao.Interfaces;
+﻿using KeyManagerTool.CryptoLib.Interfaces;
+using KeyManagerTool.Dao.Interfaces;
 using KeyManagerTool.Domain;
-using KeyManagerTool.Domain.Interfaces;
 using KeyManagerTool.Service.Interfaces;
 using NLog;
 

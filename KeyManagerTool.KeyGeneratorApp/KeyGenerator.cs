@@ -5,7 +5,7 @@ using NLog;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace KeyManagerTool.Services
+namespace KeyManagerTool.KeyGeneratorApp
 {
     public class KeyGenerator
     {
@@ -24,19 +24,19 @@ namespace KeyManagerTool.Services
 
         public void Generate()
         {
-            var updatePath = Path.Combine(_basePath, "update");
+            var keyOutputPath = _basePath;
 
             try
             {
-                Directory.CreateDirectory(updatePath);
+                Directory.CreateDirectory(keyOutputPath);
 
-                _logger.Info($"確保金鑰更新目錄存在: {updatePath}");
+                _logger.Info($"確保金鑰輸出目錄存在: {keyOutputPath}");
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"無法建立金鑰更新目錄: {updatePath}。程式將停止金鑰生成。");
+                _logger.Error(ex, $"無法建立金鑰輸出目錄: {keyOutputPath}。程式將停止金鑰生成。");
 
-                Console.WriteLine($"錯誤：無法建立目錄 {updatePath}。");
+                Console.WriteLine($"錯誤：無法建立目錄 {keyOutputPath}。");
 
                 return;
             }
@@ -45,18 +45,17 @@ namespace KeyManagerTool.Services
 
             _logger.Info($"開始生成金鑰組: {unifiedName}");
 
-            RsaKeyModel rsaKey = null;
+            RsaKeyModel rsaKey;
 
             // 產生 RSA 金鑰模型並儲存
             try
             {
                 rsaKey = _keyService.GenerateKeyOnly<RsaKeyModel>(CryptoAlgorithmType.RSA);
 
-                File.WriteAllText(Path.Combine(updatePath, $"{unifiedName}.public.pem"), rsaKey.PublicKey);
-                File.WriteAllText(Path.Combine(updatePath, $"{unifiedName}.private.pem"), rsaKey.PrivateKey);
+                File.WriteAllText(Path.Combine(keyOutputPath, $"{unifiedName}.public.pem"), rsaKey.PublicKey);
+                File.WriteAllText(Path.Combine(keyOutputPath, $"{unifiedName}.private.pem"), rsaKey.PrivateKey);
 
-                _logger.Info($"RSA 金鑰已生成並儲存到 {updatePath}: {unifiedName}.public.pem / .private.pem");
-
+                _logger.Info($"RSA 金鑰已生成並儲存到 {keyOutputPath}: {unifiedName}.public.pem / .private.pem");
                 Console.WriteLine($"[測試] RSA 金鑰已產生: {unifiedName}.public.pem / .private.pem");
             }
             catch (CryptographicException ex)
@@ -69,7 +68,7 @@ namespace KeyManagerTool.Services
             }
             catch (IOException ex)
             {
-                _logger.Error(ex, $"RSA 金鑰檔案寫入失敗到 {updatePath}。程式將停止金鑰生成。");
+                _logger.Error(ex, $"RSA 金鑰檔案寫入失敗到 {keyOutputPath}。程式將停止金鑰生成。");
 
                 Console.WriteLine("錯誤：RSA 金鑰檔案寫入失敗。");
 
@@ -77,7 +76,7 @@ namespace KeyManagerTool.Services
             }
             catch (UnauthorizedAccessException ex)
             {
-                _logger.Error(ex, $"沒有權限寫入 RSA 金鑰檔案到 {updatePath}。程式將停止金鑰生成。");
+                _logger.Error(ex, $"沒有權限寫入 RSA 金鑰檔案到 {keyOutputPath}。程式將停止金鑰生成。");
 
                 Console.WriteLine("錯誤：沒有寫入權限。");
 
@@ -92,7 +91,7 @@ namespace KeyManagerTool.Services
                 return;
             }
 
-            SymmetricKeyModel aesKey = null;
+            SymmetricKeyModel aesKey;
 
             // 產生 AES 金鑰模型（含 Key + IV），加密並儲存
             try
@@ -102,12 +101,11 @@ namespace KeyManagerTool.Services
                 var combined = $"{Convert.ToBase64String(aesKey.Key)}.{Convert.ToBase64String(aesKey.IV)}";
                 var combinedBytes = Encoding.UTF8.GetBytes(combined);
                 var encrypted = _cryptoService.Encrypt(combinedBytes, CryptoAlgorithmType.RSA, rsaKey);
-                var aesDerPath = Path.Combine(updatePath, $"{unifiedName}.der");
+                var aesDerPath = Path.Combine(keyOutputPath, $"{unifiedName}.der");
 
                 File.WriteAllBytes(aesDerPath, encrypted);
 
-                _logger.Info($"AES Key + IV 已加密儲存到 {updatePath}: {unifiedName}.der");
-
+                _logger.Info($"AES Key + IV 已加密儲存到 {keyOutputPath}: {unifiedName}.der");
                 Console.WriteLine($"[測試] AES Key + IV 已加密儲存: {unifiedName}.der");
             }
             catch (CryptographicException ex)
@@ -120,7 +118,7 @@ namespace KeyManagerTool.Services
             }
             catch (IOException ex)
             {
-                _logger.Error(ex, $"AES 金鑰檔案寫入失敗到 {updatePath}。程式將停止金鑰生成。");
+                _logger.Error(ex, $"AES 金鑰檔案寫入失敗到 {keyOutputPath}。程式將停止金鑰生成。");
 
                 Console.WriteLine("錯誤：AES 金鑰檔案寫入失敗。");
 
@@ -128,7 +126,7 @@ namespace KeyManagerTool.Services
             }
             catch (UnauthorizedAccessException ex)
             {
-                _logger.Error(ex, $"沒有權限寫入 AES 金鑰檔案到 {updatePath}。程式將停止金鑰生成。");
+                _logger.Error(ex, $"沒有權限寫入 AES 金鑰檔案到 {keyOutputPath}。程式將停止金鑰生成。");
 
                 Console.WriteLine("錯誤：沒有寫入權限。");
 
@@ -144,7 +142,7 @@ namespace KeyManagerTool.Services
             }
 
             // 驗證：從檔案讀取並解密還原
-            var aesDerPathForValidation = Path.Combine(updatePath, $"{unifiedName}.der");
+            var aesDerPathForValidation = Path.Combine(keyOutputPath, $"{unifiedName}.der");
 
             try
             {
@@ -217,7 +215,7 @@ namespace KeyManagerTool.Services
         private static string GetRandomName()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            var random = new Random();
+            var random = new Random(); //
 
             return new string(Enumerable.Repeat(chars, 8).Select(s => s[random.Next(s.Length)]).ToArray());
         }

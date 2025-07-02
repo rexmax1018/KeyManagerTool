@@ -2,7 +2,6 @@
 using KeyManagerTool.Dao;
 using KeyManagerTool.Dao.Interfaces;
 using KeyManagerTool.Dao.Repositories;
-using KeyManagerTool.Domain.Interfaces;
 using KeyManagerTool.Service.Interfaces;
 using KeyManagerTool.Service.Services;
 using Microsoft.Extensions.Configuration;
@@ -14,17 +13,12 @@ namespace KeyManagerTool.Service.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            // 註冊 NLog Logger 實例
-            builder.RegisterInstance(LogManager.GetCurrentClassLogger()).As<ILogger>().SingleInstance();
-
-            // 註冊 IDataEncryptionService 的實作
-            builder.RegisterType<DataEncryptionService>().As<IDataEncryptionService>().SingleInstance();
-
             // 註冊 AppDbContext
             builder.Register(c =>
             {
                 var configuration = c.Resolve<IConfiguration>(); // 從容器中獲取 IConfiguration
                 var connectionString = configuration.GetConnectionString("DefaultConnection");
+
                 return new AppDbContext(connectionString);
             }).InstancePerLifetimeScope(); // 確保每個生命週期範圍內有一個 DbContext 實例
 

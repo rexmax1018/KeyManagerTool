@@ -1,4 +1,4 @@
-﻿namespace KeyManagerTool.Domain.Interfaces
+﻿namespace KeyManagerTool.CryptoLib.Interfaces
 {
     public interface IDataEncryptionService
     {

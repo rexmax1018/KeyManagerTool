@@ -1,11 +1,13 @@
 ﻿using CryptoSuite.KeyManagement.Enums;
 using CryptoSuite.KeyManagement.Models;
 using CryptoSuite.Services.Interfaces;
-using KeyManagerTool.Domain.Interfaces;
+using KeyManagerTool.CryptoLib.Interfaces; // 更新為新的介面命名空間
 using NLog;
 using System.Text;
+using System;
+using System.IO;
 
-namespace KeyManagerTool.Service
+namespace KeyManagerTool.CryptoLib.Services
 {
     public class DataEncryptionService : IDataEncryptionService
     {
@@ -17,7 +19,7 @@ namespace KeyManagerTool.Service
         public DataEncryptionService(
             ICryptoService cryptoService,
             ICryptoKeyService cryptoKeyService,
-            KeyManagerService keyManagerService,
+            KeyManagerService keyManagerService, // KeyManagerService 現在也在 CryptoLib 內部
             ILogger logger)
         {
             _cryptoService = cryptoService ?? throw new ArgumentNullException(nameof(cryptoService));

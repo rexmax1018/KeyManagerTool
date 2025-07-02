@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="8.3.0" />
+    <PackageReference Include="CryptoSuite.Config" Version="1.0.0" />
+    <PackageReference Include="CryptoSuite.Core" Version="1.0.0" />
+    <PackageReference Include="CryptoSuite.Extensions" Version="1.0.0" />
+    <PackageReference Include="CryptoSuite.Helpers" Version="1.0.0" />
+    <PackageReference Include="CryptoSuite.KeyManagement" Version="1.0.0" />
+    <PackageReference Include="CryptoSuite.Services" Version="1.0.0" />
+    <PackageReference Include="NLog" Version="6.0.1" />
+  </ItemGroup>
+
+</Project>

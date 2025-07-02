@@ -1,11 +1,12 @@
 ﻿using Autofac;
-using NLog;
-using Microsoft.Extensions.Configuration;
-using KeyManagerTool.Service.Modules;
-using KeyManagerTool.Service;
-using KeyManagerTool.Service.Interfaces;
+using KeyManagerTool.CryptoLib.Interfaces;
+using KeyManagerTool.CryptoLib.Modules;
+using KeyManagerTool.CryptoLib.Services;
 using KeyManagerTool.Domain;
-using KeyManagerTool.Domain.Interfaces; // 引入 IDataEncryptionService 介面
+using KeyManagerTool.Service.Interfaces;
+using KeyManagerTool.Service.Modules;
+using Microsoft.Extensions.Configuration;
+using NLog;
 
 Console.WriteLine("[KeyManagerTool] 正在啟動...");
 
@@ -25,13 +26,18 @@ var builder = new ContainerBuilder();
 
 // 註冊 IConfiguration 實例
 builder.RegisterInstance(configuration).As<IConfiguration>().SingleInstance();
+// 註冊主 Logger 實例
+builder.RegisterInstance(mainLogger).As<ILogger>().SingleInstance();
 
-// 載入 Service 專案中的所有 Autofac 模組
+// 載入應用程式服務模組 (包含 CustomerService)
 builder.RegisterModule(new AppServicesModule());
-builder.RegisterModule(new CryptoSuiteModule());
 
+// 從 appsettings.json 獲取金鑰基礎路徑
 var keyManagerBasePath = Path.Combine(Directory.GetCurrentDirectory(), configuration.GetValue<string>("CryptoSuite:KeyDirectory"));
-builder.RegisterModule(new KeyManagementModule(keyManagerBasePath));
+
+// 載入 KeyManagerTool.CryptoLib 中的模組
+builder.RegisterModule(new CryptoSuiteModule()); // 註冊 CryptoSuite 的核心服務
+builder.RegisterModule(new CoreServicesModule(keyManagerBasePath, mainLogger)); // 註冊 KeyManagerService 和 DataEncryptionService
 
 using var container = builder.Build();
 
@@ -40,23 +46,25 @@ try
     using (var scope = container.BeginLifetimeScope())
     {
         var customerService = scope.Resolve<ICustomerService>();
-        var keyGenerator = scope.Resolve<KeyGenerator>();
         var keyManagerService = scope.Resolve<KeyManagerService>();
-        var dataEncryptionService = scope.Resolve<IDataEncryptionService>(); // 解析 IDataEncryptionService
+        var dataEncryptionService = scope.Resolve<IDataEncryptionService>();
 
-        // 1. 生成新的金鑰組 (會放在 update 資料夾)
-        keyGenerator.Generate();
-        mainLogger.Info("新的金鑰組已生成並放入 update 資料夾。");
+        // 1. 不再在這裡生成金鑰組。金鑰生成由獨立的 KeyManagerTool.KeyGeneratorApp 完成。
+        //    您需要單獨執行 KeyManagerTool.KeyGeneratorApp 來生成金鑰。
 
         // 2. 觸發 KeyManagerService 處理金鑰搬移 (從 update 到 current/history)
-        // 這一步會將新生成的金鑰移到 current。
+        //    這一步會將外部生成的金鑰移到 current。
+        mainLogger.Info("開始檢查並處理 update 資料夾中的新金鑰組...");
+
         await keyManagerService.StartAsync();
+
+        mainLogger.Info("金鑰處理程序完成。");
 
         // 3. 獲取當前活動金鑰的 unifiedName (用於新增數據和重新加密舊數據)
         string currentActiveUnifiedName = keyManagerService.GetLatestActiveUnifiedName();
         if (string.IsNullOrEmpty(currentActiveUnifiedName))
         {
-            mainLogger.Error("無法獲取當前活動的 unifiedName。請確保金鑰生成成功。應用程式將終止。");
+            mainLogger.Error("無法獲取當前活動的 unifiedName。請確保金鑰已由 KeyGeneratorApp 生成並成功處理。應用程式將終止。");
             return;
         }
         mainLogger.Info($"當前活動金鑰的 unifiedName: {currentActiveUnifiedName}");
@@ -87,7 +95,8 @@ try
         {
             try
             {
-                string oldUnifiedName = dataEncryptionService.GetUnifiedNameFromEncryptedData(customer.GetEncryptedEmailDataForPersistence());
+                string oldEncryptedEmailData = customer.GetEncryptedEmailDataForPersistence();
+                string oldUnifiedName = dataEncryptionService.GetUnifiedNameFromEncryptedData(oldEncryptedEmailData);
 
                 // 如果舊資料的 unifiedName 與當前活動的 unifiedName 不同，則重新加密
                 if (oldUnifiedName != currentActiveUnifiedName)

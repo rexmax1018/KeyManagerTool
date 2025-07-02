@@ -1,4 +1,6 @@
-﻿namespace KeyManagerTool.Service.Models
+﻿using System;
+
+namespace KeyManagerTool.CryptoLib.Models
 {
     public class KeySetInfo
     {
@@ -6,7 +8,7 @@
         public string AesPath { get; set; }
         public string RsaPublicKeyPath { get; set; }
         public string RsaPrivateKeyPath { get; set; }
-        public DateTime CreationTime { get; set; }
+        public DateTime CreationTime { get; set; } // 用於排序
 
         public string[] GetAllPaths() => new[] { AesPath, RsaPublicKeyPath, RsaPrivateKeyPath };
     }
